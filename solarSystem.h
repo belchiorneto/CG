@@ -5,7 +5,13 @@
 #include "Objeto.h"
 #include "Esfera.h"
 
-
+/*
+    Classe para criar os objetos necessários para formação
+    do "sistema solar", neste momento, estamos considerando todos 
+    os corpos celestes como planetas (classe Esfera)
+    posteriormente pensar em desmebrar tais corpos:
+    por exemplo, satélites naturais, cometas, satélites comuns etc
+*/
 class SolarSystem
 {
    
@@ -19,14 +25,16 @@ public:
         return this->planets;
     }
     void build(){
-        Vec3f pos = {0,0,0};
-    float radius = 0.9;
+    Vec3f pos = {0,0,0}; // sol inicia na origem do nosso sistema de coordenadas
+    float radius = 0.9; 
+    
     
     Esfera *sun = new Esfera(pos, radius);
     (*sun).setNome("sol"); 
     (*sun).setColor(Vec3f(1,0.5,0));
     planets.push_back(sun); // sun
 
+    // abaixo definimos vários planetas cada um com sua característica
     pos = {pos.x + 1.7f, pos.y,pos.z};
     radius = 0.3;
     Esfera *mercury = new Esfera(pos, radius);

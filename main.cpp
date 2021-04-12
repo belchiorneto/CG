@@ -130,7 +130,7 @@ void timerCB(int millisec)
     glutTimerFunc(millisec, timerCB, millisec);
     for (auto& ob : objects)
     {
-        ob->move(objects); // change object position here
+        ob->move(objects);
     }
     glutPostRedisplay();
 }

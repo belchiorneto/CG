@@ -9,6 +9,10 @@
 
 using namespace std;
 
+/*
+    Função genérica para armazenar as informações de 
+    um objeto a ser printado na tela usando ray-trace
+*/
 const float kInfinity = std::numeric_limits<float>::max();
 std::random_device rd;
 std::mt19937 gen(rd());

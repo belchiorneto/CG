@@ -4,6 +4,13 @@
 #include <cstdlib>
 #include <cmath>
 #include "Calculos.h"
+
+/*
+    Esta classe irá servir para qualquer objeto esférico, 
+    herda as características definidas na classe "Objeto"
+    nesse trabalho usaremos pra representar planetas e 
+    luas no sistema solar, bem como o próprio sol
+*/
 class Esfera : public Objeto
 {
    
@@ -13,16 +20,20 @@ public:
     }
     virtual void move(vector<Objeto *> objects)
     {
-        if(moving){
-            Objeto *pivo;
+        if(moving){ // inicialmente parado, só se move se for acionado esse gatilho
+            Objeto *pivo; // definimos um obketo como sendo o pivo a qual este irá se mover em volta
             for (Objeto * ob: objects) {
-                if (ob->nome == "sol") {
+                if (ob->nome == "sol") { // nesse trabalho, todos os objetos vão girar em torno do sol
                     pivo = ob;                        
                 }
                 
             }
             
-            /* // tentativa fracassada de calcular a orbita da lua em relação ao sol
+            /*
+            Aqui eu perdi quase metade do tempo do trabalho, infelizmente não consegui
+            concluir, deixo comentado aqui pra tentar terminar nas férias 
+            // tentativa fracassada de calcular a orbita da lua em relação ao sol
+            
             if(nome == "lua"){
                 if(curva > 0.4){
                     curva = 0.4;
@@ -87,19 +98,19 @@ public:
             }else{
                 */
             float angle = -M_PI / speed;
-            float s = sin(angle);
-            float c = cos(angle);
+            float s = sin(angle); // guardando o seno aqui
+            float c = cos(angle); // e o coseno aqui
 
-            center.x -= pivo->center.x;
+            center.x -= pivo->center.x; // voltanso à posição anterior
             center.y -= pivo->center.y;
             
             // rotate point
-            float xnew = center.x * c - center.y * s;
+            float xnew = center.x * c - center.y * s; // rotaciona 
             float ynew = center.x * s + center.y * c;
             
 
             // translate point back:
-            center.x = xnew + pivo->center.x;
+            center.x = xnew + pivo->center.x; //e finalmente move para a nova posição
             center.y = ynew + pivo->center.y;
                 
            // }
@@ -108,8 +119,13 @@ public:
     }
 
     virtual void rotate(float angle)
-    {    }
+    {  
+        /*
+            implementar futuramente a rotação em volta do proprio eixo
+        */
+    }
 
+    // setters
     void setCenter(Vec3f c);
     void setPivo(Esfera *p);
     void setNome(char *n);
@@ -125,25 +141,29 @@ public:
     bool intersect(const Vec3f &orig, const Vec3f &dir, float &t) const
     {
         float t0, t1; // solutions for t if the ray intersects
-        Vec3f L = orig - center;
-        float a = dir.dotProduct(dir);
-        float b = 2 * dir.dotProduct(L);
-        float c = L.dotProduct(L) - radius2;
-        bool resposta = Calculos().baskara(a, b, c, t0, t1);
+        Vec3f L = orig - center; // distancia da camera
+        float a = dir.dotProduct(dir); // a²
+        float b = 2 * dir.dotProduct(L); // 2.b.t
+        float c = L.dotProduct(L) - radius2; // c
+        // devolve o resultado de baskara em t0 e t1 ou falso
+        bool resposta = Calculos().baskara(a, b, c, t0, t1); 
 
         if (!resposta) return false;
         if (t0 > t1) std::swap(t0, t1);
 
         if (t0 < 0) {
-            t0 = t1; // if t0 is negative, let's use t1 instead
-            if (t0 < 0) return false; // both t0 and t1 are negative
+            t0 = t1; // se t0 negativo, usamos t1
+            if (t0 < 0) return false; // os dois são negativos, termina aqui
         }
 
-        t = t0;
+        t = t0; // seta a distancia onde o raio acertou
 
-        return true;
+        return true; // intersectou
     }
     
+    /*
+        função para calculo a posição dos pixels a serem pintados
+    */
     void getSurfaceData(const Vec3f &Phit, Vec3f &Nhit, Vec2f &tex) const
     {
         Nhit = Phit - center;
@@ -173,7 +193,7 @@ void Esfera:: setSpeed(float s){
 void Esfera:: setMoving(bool move){
     this->moving = move;
 }
-void Esfera:: setNome(char * n){
+void Esfera::setNome(char * n){
     this->nome = n;
 }
 void Esfera::setColor(Vec3f c){
