@@ -17,9 +17,6 @@ public:
     virtual void move(float speed)
     {
         
-        base.x = base.x + 0.05;
-        base.y = base.y + 0.05;
-        base.z = base.z;
        
     }
 

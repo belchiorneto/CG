@@ -24,5 +24,6 @@ class Objeto
     
     Vec3f color, center;
     char *nome;
+    float speed;
 };
 #endif

@@ -14,7 +14,6 @@
 #include <GL/glew.h>
 #include <GL/freeglut.h>
 
-#include "Timer.h"
 #include "Objeto.h"
 #include "Options.h"
 #include "Calculos.h"
@@ -29,9 +28,17 @@ private:
     std::vector<int> matrizCores;
     Options options;
     std::vector<Objeto *> objects;
-    Timer t;
     double elapsed;
+    Vec3f camOrigin, camDirection;
+    
 public:
+    Matrix44f cameraToWorld = 
+    Matrix44f(
+    0.94 , 0 , -0.32, 0, 
+    -0.17, 0.83, -0.52, 0, 
+    0.27 , 0.55, 0.78  , 0, 
+    8.20 , 8.37, 17.93, 1
+    ); 
     Screen();
     ~Screen();
     void render();
@@ -39,6 +46,19 @@ public:
     void setup();
     void resize(int w, int h);
     
+    void setCamOrigin(Vec3f camOrigin){
+        this->camOrigin = camOrigin;
+    }
+    void setCamDirection(Vec3f camDir){
+        this->camDirection = camDir;
+    }
+
+    Vec3f getCamOrigin(){
+        return this->camOrigin;
+    }
+    Vec3f getCamDirection(){
+        return this->camDirection;
+    }
     void setMatricCores(std::vector<int> matrizCores){
         this->matrizCores = matrizCores;
     }
@@ -61,7 +81,7 @@ public:
 
 Screen::Screen()
 {
-    elapsed = t.elapsed();
+
 }
 
 Screen::~Screen()
@@ -71,30 +91,24 @@ Screen::~Screen()
 
 void Screen::render()
 {
+    const std::vector<Objeto *> objects = this->getObjects(); // registra os objetos
+    Vec3f *framebuffer = new Vec3f[options.width * options.height]; // cria o buffer
+    Vec3f *pix = framebuffer; // copia o buffer aqui
+    float scale = tan(Calculos().deg2rad(options.fov * 0.5)); // escala pra montar a tela
+    float imageAspectRatio = options.width / (float)options.height; // aqui pra manter aspecto
+    cameraToWorld.multVecMatrix(Vec3f(0), camOrigin); // transformação da camera
+    Ray ray = Ray(); // cria o raio
     
-    double iniRender = t.elapsed();
-    const Options options = Screen::getOptions();
-    const std::vector<Objeto *> objects = this->getObjects();
-    Vec3f *framebuffer = new Vec3f[options.width * options.height];
-    Vec3f *pix = framebuffer;
-    float scale = tan(Calculos().deg2rad(options.fov * 0.5));
-    float imageAspectRatio = options.width / (float)options.height;
-    Vec3f orig, dir;
-    options.cameraToWorld.multVecMatrix(Vec3f(0), orig);
-    Ray ray = Ray();
-    
-    for (uint32_t j = 0; j < options.height; ++j) {
-        for (uint32_t i = 0; i < options.width; ++i) {
+    for (uint32_t j = 0; j < options.height; ++j) { // varre as linhas
+        for (uint32_t i = 0; i < options.width; ++i) { // varre as colunas
             float x = (2 * (i + 0.5) / (float)options.width - 1) * imageAspectRatio * scale;
             float y = (1 - 2 * (j + 0.5) / (float)options.height) * scale;
-            Vec3f dir = {0,0,0};
-            options.cameraToWorld.multDirMatrix(Vec3f(x, y, -1), dir);
-            dir.normalize();
-            *(pix++) = ray.castRay(orig, dir, objects);
-            
+            cameraToWorld.multDirMatrix(Vec3f(x, y, -1), camDirection);
+            camDirection.normalize();
+            *(pix++) = ray.castRay(camOrigin, camDirection, objects); // dispara em cada pixel
         }
     }
-    
+    // loop pra pintar a tela
     glClear(GL_COLOR_BUFFER_BIT);
 	glBegin(GL_POINTS);
         int x = 1;
@@ -127,6 +141,7 @@ void Screen::render()
     
     
 }
+
 void Screen::setup(void) 
 {
    //glClearColor(1.0, 1.0, 1.0, 0.0); 
